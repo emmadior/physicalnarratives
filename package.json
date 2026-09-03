@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "nuxi dev",
-    "build": "nuxi build",
-    "generate": "nuxi generate",
+    "build": "nuxi build && node scripts/materialize-dist.mjs",
+    "generate": "nuxi generate && node scripts/materialize-dist.mjs",
     "preview": "nuxi preview",
     "postinstall": "nuxi prepare"
   },

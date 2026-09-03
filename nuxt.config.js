@@ -17,7 +17,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: "Liquid blob — video mat",
+      title: "Emma Portner",
       meta: [
         { charset: "utf-8" },
         {
