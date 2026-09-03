@@ -1,0 +1,5 @@
+name = "emmadior"
+compatibility_date = "2025-09-03"
+# Nuxt `generate` writes real files here. `dist` is only a symlink and
+# Cloudflare Pages rejects that ("links to files that can't be accessed").
+pages_build_output_dir = ".output/public"
