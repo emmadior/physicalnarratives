@@ -1,0 +1,21 @@
+{
+  "name": "emma-liquid-blob",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxi dev",
+    "build": "nuxi build",
+    "generate": "nuxi generate",
+    "preview": "nuxi preview",
+    "postinstall": "nuxi prepare"
+  },
+  "dependencies": {
+    "@pinia/nuxt": "^1.0.2",
+    "@sanity/client": "^7.26.2",
+    "lil-gui": "^0.20.0",
+    "nuxt": "^3.21.0",
+    "pinia": "^4.0.3",
+    "simplex-noise": "^4.0.3",
+    "three": "^0.172.0"
+  }
+}
