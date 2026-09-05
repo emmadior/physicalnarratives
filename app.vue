@@ -1,7 +1,7 @@
 <template>
   <div class="app">
     <div class="logo">Emma Portner</div>
-    <div class="description">Physical narratives</div>
+    <div class="description">Physical Narratives</div>
     <NuxtPage />
   </div>
 </template>
