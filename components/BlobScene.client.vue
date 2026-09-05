@@ -16,19 +16,11 @@
       </div>
     </button>
 
-    <div
-      v-show="hasInfo"
-      ref="infoRef"
-      class="blob-info"
-      :class="{ 'blob-info--interactive': infoInteractive }"
-      :style="{
-        left: `${infoPanel.x}px`,
-        top: `${infoPanel.y}px`,
-        opacity: infoPanel.opacity,
-      }"
-      @pointerdown.stop
-      @click.stop
-    >
+    <div v-show="hasInfo" ref="infoRef" class="blob-info" :class="{ 'blob-info--interactive': infoInteractive }" :style="{
+      left: `${infoPanel.x}px`,
+      top: `${infoPanel.y}px`,
+      opacity: infoPanel.opacity,
+    }" @pointerdown.stop @click.stop>
       <ProjectInfo :title="infoPanel.title" :date="infoPanel.date" :location="infoPanel.location"
         :category="infoPanel.category" :blocks="infoPanel.blocks" :credits="infoPanel.credits" />
     </div>
