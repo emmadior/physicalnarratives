@@ -2,8 +2,8 @@
   <div v-if="hasContent" class="project-info">
     <div class="project-info__header">
       <p v-if="date" class="project-info__date">{{ date }}</p>
-            <p v-if="category" class="project-info__category">{{ category }}</p>
-            <p v-if="title" class="project-info__title">{{ title }}</p>
+      <p v-if="category" class="project-info__category">{{ category }}</p>
+      <p v-if="title" class="project-info__title">{{ title }}</p>
       <p v-if="location" class="project-info__location">{{ location }}</p>
 
     </div>
@@ -126,6 +126,10 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
   padding-top: 100px;
 }
 
+.project-info__category {
+  text-transform: capitalize;
+}
+
 .project-info__header {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -137,29 +141,20 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-} 
-
-.project-info__title {
-
 }
+
+.project-info__title {}
 
 .project-info__p,
-.project-info__quote {
-}
+.project-info__quote {}
 
-.project-info__quote {
-}
+.project-info__quote {}
 
-.project-info__list {
-}
+.project-info__list {}
 
-.project-info__list li + li {
+.project-info__list li+li {}
 
-}
-
-.project-info__credits {
-
-}
+.project-info__credits {}
 
 .project-info__credits .project-info__p:last-child,
 .project-info__credits .project-info__list:last-child,
@@ -168,8 +163,8 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
 }
 
 .project-info :deep(a) {
-  pointer-events: auto;
   color: inherit;
   text-underline-offset: 2px;
+  cursor: pointer;
 }
 </style>

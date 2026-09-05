@@ -20,20 +20,17 @@
       v-show="hasInfo"
       ref="infoRef"
       class="blob-info"
+      :class="{ 'blob-info--interactive': infoInteractive }"
       :style="{
         left: `${infoPanel.x}px`,
         top: `${infoPanel.y}px`,
         opacity: infoPanel.opacity,
       }"
+      @pointerdown.stop
+      @click.stop
     >
-      <ProjectInfo
-        :title="infoPanel.title"
-        :date="infoPanel.date"
-        :location="infoPanel.location"
-        :category="infoPanel.category"
-        :blocks="infoPanel.blocks"
-        :credits="infoPanel.credits"
-      />
+      <ProjectInfo :title="infoPanel.title" :date="infoPanel.date" :location="infoPanel.location"
+        :category="infoPanel.category" :blocks="infoPanel.blocks" :credits="infoPanel.credits" />
     </div>
 
     <VideoPlayerBar :source-video="playerVideo" :visible="playerVisible" @fullscreen-change="onFullscreenChange"
@@ -79,6 +76,9 @@ const hasInfo = computed(
     (Array.isArray(infoPanel.value.blocks) && infoPanel.value.blocks.length > 0) ||
     (Array.isArray(infoPanel.value.credits) && infoPanel.value.credits.length > 0),
 );
+
+/** Receive clicks/selection once the rising info is mostly on screen. */
+const infoInteractive = computed(() => (infoPanel.value.opacity || 0) > 0.4);
 
 function reportInfoBox() {
   const el = infoRef.value;
@@ -206,10 +206,16 @@ onUnmounted(() => {
 
 .blob-info {
   position: fixed;
-  z-index: 12;
+  z-index: 100000;
   transform: translate(-50%, -50%);
   pointer-events: none;
   will-change: left, top, opacity;
   width: 70%;
+}
+
+.blob-info--interactive :deep(.project-info) {
+  pointer-events: auto;
+  user-select: text;
+  cursor: auto;
 }
 </style>

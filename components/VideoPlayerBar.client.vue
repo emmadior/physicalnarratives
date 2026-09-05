@@ -13,35 +13,41 @@
     <div class="player-controls" :class="{ 'player-controls--hidden': !controlsVisible }" @mouseover="handleMouseMove"
       @mouseleave="handleMouseLeave">
       <div class="player-controls__inner">
-        <button type="button" class="player-btn" @click="togglePlay" aria-label="Play or pause">
-          <div v-if="!isPlaying" aria-hidden="true">
-            (PLAY)
-          </div>
-          <div v-else>
-            (PAUSE)
-          </div>
-        </button>
-
-        <div class="player-time">{{ displayTime }}</div>
-
         <div ref="timelineRef" class="player-timeline" @click="seek" @mousemove="handleTimelineHover"
           @mouseleave="handleTimelineLeave" @touchstart.prevent="handleTouchStart" @touchmove.prevent="handleTouchMove"
           @touchend="handleTouchEnd">
           <div class="player-timeline__track">
             <div class="player-timeline__progress" :style="{ width: `${progress}%` }" />
+            <div class="player-timeline__knob" :style="{ left: `${progress}%` }" />
           </div>
         </div>
 
-        <div class="player-time player-time--total">{{ formatTime(duration) }}</div>
+        <div class="player-controls__row">
+          <div class="player-time">{{ displayTime }}</div>
 
-        <button type="button" class="player-btn player-btn--fs" @click="toggleFullscreen" aria-label="Fullscreen">
-          <div v-if="!isFullscreen" aria-hidden="true">
-            (FS)
+          <div class="player-transport">
+            <button type="button" class="player-btn" :class="{ 'player-btn--active': isPlaying }" @click="togglePlay"
+              aria-label="Play">
+              Play
+            </button>
+            <button type="button" class="player-btn" :class="{ 'player-btn--active': !isPlaying }" @click="togglePlay"
+              aria-label="Pause">
+              Pause
+            </button>
           </div>
-          <div v-else aria-hidden="true">
-            (EXIT)
-          </div>
-        </button>
+
+          <button type="button" class="player-btn player-btn--fs" @click="toggleFullscreen"
+            :aria-label="isFullscreen ? 'Exit fullscreen' : 'Fullscreen'">
+            <div v-if="!isFullscreen" class="player-fs-icon" viewBox="0 0 32 32" width="24" height="24"
+              aria-hidden="true">
+              Fullscreen
+            </div>
+
+            <div v-else class="player-fs-icon" viewBox="0 0 32 32" width="24" height="24" aria-hidden="true">
+              Exit
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -87,10 +93,10 @@ const displayTime = computed(() =>
 );
 
 function formatTime(timeInSeconds) {
-  if (!Number.isFinite(timeInSeconds)) return "0:00";
+  if (!Number.isFinite(timeInSeconds)) return "00:00";
   const minutes = Math.floor(timeInSeconds / 60);
   const seconds = Math.floor(timeInSeconds % 60);
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }
 
 function getActiveVideo() {
@@ -541,11 +547,10 @@ defineExpose({ togglePlay, toggleFullscreen });
   transform: translateX(-50%);
   bottom: 24px;
   width: min(720px, calc(100% - 40px));
-  padding: 5px 10px;
-
-
+  padding: 0;
   font-family: "Century", "Century Gothic", Georgia, serif;
-  font-size: 12px;
+  font-size: 13px;
+  color: #000;
   transition: opacity 0.2s ease;
 }
 
@@ -553,6 +558,7 @@ defineExpose({ togglePlay, toggleFullscreen });
   bottom: 25px;
   width: min(720px, 60%);
   z-index: 2;
+  padding: 10px 12px;
   background: var(--background-color, #dbdbdb);
 }
 
@@ -563,39 +569,64 @@ defineExpose({ togglePlay, toggleFullscreen });
 
 .player-controls__inner {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
   width: 100%;
 }
 
+.player-controls__row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+}
+
 .player-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
-  color: #000;
-  width: 100px;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
 }
 
 .player-btn:focus {
   outline: none;
 }
 
-.player-time {
-  min-width: 36px;
-  font-variant-numeric: tabular-nums;
+.player-btn--active {
+  opacity: 0.3;
 }
 
-.player-time--total {
-  text-align: right;
+.player-transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65em;
+}
+
+.player-btn--fs {
+  justify-self: end;
+
+}
+
+.player-fs-icon {
+  display: block;
+}
+
+.player-time {
+  justify-self: start;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 .player-timeline {
-  flex: 1;
-  height: 20px;
+  width: 100%;
+  height: 16px;
   display: flex;
   align-items: center;
   position: relative;
@@ -604,11 +635,10 @@ defineExpose({ togglePlay, toggleFullscreen });
 }
 
 .player-timeline__track {
+  position: relative;
   width: 100%;
-  height: 2px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 2px;
-  overflow: hidden;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.22);
 }
 
 .player-timeline__progress {
@@ -616,16 +646,28 @@ defineExpose({ togglePlay, toggleFullscreen });
   background: #000;
 }
 
+.player-timeline__knob {
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #000;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
 .player-timeline::before {
   content: "";
   position: absolute;
-  height: 10px;
-  width: 3px;
+  height: 7px;
+  width: 1px;
   background: rgba(0, 0, 0, 0.8);
   top: 5px;
   left: var(--x-position, -100px);
   pointer-events: none;
   opacity: 0;
+
   transition: opacity 0.2s;
   border-radius: 10px;
 }
@@ -633,13 +675,15 @@ defineExpose({ togglePlay, toggleFullscreen });
 .player-timeline::after {
   content: var(--hover-time, "");
   position: absolute;
-  top: -10px;
+  top: -12px;
+  font-size: 10px;
   left: var(--x-position, -100px);
   transform: translateX(-50%);
-
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .player-timeline:hover::before,
@@ -655,7 +699,12 @@ defineExpose({ togglePlay, toggleFullscreen });
   }
 
   .player-timeline__track {
-    height: 4px;
+    height: 2px;
+  }
+
+  .player-timeline__knob {
+    width: 7px;
+    height: 7px;
   }
 }
 </style>
