@@ -1,0 +1,3 @@
+# Cloudflare Pages SPA fallback so deep links like /island/:slug
+# serve the Nuxt app instead of a hard 404.
+/island/*  /200.html  200
