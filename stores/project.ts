@@ -11,6 +11,7 @@ export interface Project {
   date: string | null;
   location: string | null;
   category: string | null;
+  thumbnailUrl: string | null;
   previewUrl: string | null;
   vimeoLink: string | null;
   info: unknown[] | null;

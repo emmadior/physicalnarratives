@@ -9,6 +9,7 @@ export const projectsQuery = `*[_type == "project"] | order(date desc) {
   credits,
   location,
   category,
+  "thumbnailUrl": thumbnail.asset->url,
   "previewUrl": preview.asset->url,
   vimeoLink,
   info
