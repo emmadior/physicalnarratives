@@ -85,6 +85,12 @@ let loadingTimeout = 0;
 let progressRaf = 0;
 /** @type {(() => void) | null} */
 let sourceListeners = null;
+/** @type {(() => void) | null} */
+let displayFsListeners = null;
+let nativeFullscreenActive = false;
+let nativeFsWasPlaying = false;
+/** @type {(() => void) | null} */
+let removeResizeListener = null;
 
 const controlsVisible = computed(() => props.visible && (!isFullscreen.value || showControls.value));
 
@@ -100,7 +106,10 @@ function formatTime(timeInSeconds) {
 }
 
 function getActiveVideo() {
-  return isFullscreen.value ? displayVideoRef.value : props.sourceVideo;
+  if (isFullscreen.value || nativeFullscreenActive) {
+    return displayVideoRef.value || props.sourceVideo;
+  }
+  return props.sourceVideo;
 }
 
 /** Keep the fullscreen element warm so entering FS does not reload the URL. */
@@ -232,9 +241,7 @@ function handleMouseLeave() {
 
 function toggleFullscreen() {
   if (isMobile.value) {
-    const video = displayVideoRef.value || props.sourceVideo;
-    if (video?.webkitEnterFullscreen) video.webkitEnterFullscreen();
-    else if (video?.requestFullscreen) video.requestFullscreen();
+    enterNativeMobileFullscreen();
     return;
   }
 
@@ -245,7 +252,103 @@ function toggleFullscreen() {
   }
 }
 
+/** Mobile: OS/video fullscreen only — no custom overlay. */
+async function enterNativeMobileFullscreen() {
+  const src = props.sourceVideo;
+  const dst = displayVideoRef.value;
+  if (!src) return;
+
+  prepareDisplayVideo(src);
+  const video = dst || src;
+  if (!video) return;
+
+  if (video !== src) {
+    video.currentTime = src.currentTime;
+    video.muted = false;
+    if (!src.paused) {
+      try {
+        await video.play();
+      } catch {
+        /* native FS may still proceed */
+      }
+    }
+  }
+
+  if (typeof video.webkitEnterFullscreen === "function") {
+    video.webkitEnterFullscreen();
+  } else if (typeof video.requestFullscreen === "function") {
+    try {
+      await video.requestFullscreen();
+    } catch {
+      /* ignored */
+    }
+  }
+}
+
+function onNativeFullscreenEnter() {
+  if (nativeFullscreenActive) return;
+  nativeFullscreenActive = true;
+
+  const src = props.sourceVideo;
+  const dst = displayVideoRef.value;
+  nativeFsWasPlaying = src ? !src.paused : false;
+
+  // Keep playback on the fullscreen element; pause the shader source.
+  if (src && dst && src !== dst) {
+    dst.currentTime = src.currentTime;
+    src.pause();
+    if (nativeFsWasPlaying) {
+      dst.muted = false;
+      dst.play().catch(() => {});
+    }
+  }
+
+  emit("fullscreen-change", true);
+  emit("playing-change", nativeFsWasPlaying);
+  isPlaying.value = nativeFsWasPlaying;
+  if (nativeFsWasPlaying) progressRaf = requestAnimationFrame(updateProgress);
+  updateProgress();
+}
+
+function onNativeFullscreenExit() {
+  if (!nativeFullscreenActive) return;
+  nativeFullscreenActive = false;
+
+  const src = props.sourceVideo;
+  const dst = displayVideoRef.value;
+
+  if (src && dst && src !== dst) {
+    src.currentTime = dst.currentTime;
+    dst.pause();
+    if (nativeFsWasPlaying) {
+      src
+        .play()
+        .then(() => {
+          isPlaying.value = true;
+          emit("playing-change", true);
+          progressRaf = requestAnimationFrame(updateProgress);
+        })
+        .catch(() => {
+          isPlaying.value = false;
+          emit("playing-change", false);
+        });
+    } else {
+      isPlaying.value = false;
+      emit("playing-change", false);
+    }
+  }
+
+  emit("fullscreen-change", false);
+  updateProgress();
+}
+
 async function enterFullscreenState() {
+  // Desktop custom fullscreen only.
+  if (isMobile.value) {
+    onNativeFullscreenEnter();
+    return;
+  }
+
   const src = props.sourceVideo;
   const dst = displayVideoRef.value;
   if (!src || !dst) return;
@@ -283,6 +386,11 @@ async function enterFullscreenState() {
 }
 
 function exitFullscreenState() {
+  if (isMobile.value) {
+    onNativeFullscreenExit();
+    return;
+  }
+
   const src = props.sourceVideo;
   const dst = displayVideoRef.value;
 
@@ -313,6 +421,11 @@ function exitFullscreenState() {
 
 function handleFullscreenChange() {
   const active = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  if (isMobile.value) {
+    if (active) onNativeFullscreenEnter();
+    else onNativeFullscreenExit();
+    return;
+  }
   if (active) enterFullscreenState();
   else exitFullscreenState();
 }
@@ -351,7 +464,7 @@ function bindSource(video) {
     clearLoading();
   };
   const onPause = () => {
-    if (isFullscreen.value) return;
+    if (isFullscreen.value || nativeFullscreenActive) return;
     isPlaying.value = false;
     emit("playing-change", false);
     cancelAnimationFrame(progressRaf);
@@ -366,8 +479,15 @@ function bindSource(video) {
   const onCanPlay = () => clearLoading();
   const onSeeking = () => scheduleLoading();
   const onSeeked = () => clearLoading();
-  const onWebkitBegin = () => enterFullscreenState();
+  const onWebkitBegin = () => {
+    if (isMobile.value) onNativeFullscreenEnter();
+    else enterFullscreenState();
+  };
   const onWebkitEnd = () => {
+    if (isMobile.value) {
+      onNativeFullscreenExit();
+      return;
+    }
     exitFullscreenState();
     isPlaying.value = false;
     emit("playing-change", false);
@@ -403,12 +523,38 @@ function bindSource(video) {
 
   if (video.readyState >= 1) onLoaded();
   isPlaying.value = !video.paused;
-  nextTick(() => prepareDisplayVideo(video));
+  nextTick(() => {
+    prepareDisplayVideo(video);
+    bindDisplayFullscreenListeners();
+  });
+}
+
+function bindDisplayFullscreenListeners() {
+  displayFsListeners?.();
+  displayFsListeners = null;
+  const video = displayVideoRef.value;
+  if (!video) return;
+
+  const onWebkitBegin = () => {
+    if (isMobile.value) onNativeFullscreenEnter();
+  };
+  const onWebkitEnd = () => {
+    if (isMobile.value) onNativeFullscreenExit();
+  };
+
+  video.addEventListener("webkitbeginfullscreen", onWebkitBegin);
+  video.addEventListener("webkitendfullscreen", onWebkitEnd);
+  displayFsListeners = () => {
+    video.removeEventListener("webkitbeginfullscreen", onWebkitBegin);
+    video.removeEventListener("webkitendfullscreen", onWebkitEnd);
+  };
 }
 
 function unbindSource() {
   sourceListeners?.();
   sourceListeners = null;
+  displayFsListeners?.();
+  displayFsListeners = null;
 }
 
 function handleKeydown(event) {
@@ -463,10 +609,18 @@ watch(
 
 onMounted(() => {
   isMobile.value = window.innerWidth < 768;
+  const onResize = () => {
+    isMobile.value = window.innerWidth < 768;
+  };
+  window.addEventListener("resize", onResize);
+  removeResizeListener = () => window.removeEventListener("resize", onResize);
   document.addEventListener("fullscreenchange", handleFullscreenChange);
   document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
   window.addEventListener("keydown", handleKeydown);
-  nextTick(() => prepareDisplayVideo());
+  nextTick(() => {
+    prepareDisplayVideo();
+    bindDisplayFullscreenListeners();
+  });
 });
 
 onUnmounted(() => {
@@ -477,6 +631,8 @@ onUnmounted(() => {
   document.removeEventListener("fullscreenchange", handleFullscreenChange);
   document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
   window.removeEventListener("keydown", handleKeydown);
+  removeResizeListener?.();
+  removeResizeListener = null;
   document.body.style.overflow = "";
 });
 
