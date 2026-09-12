@@ -22,7 +22,8 @@
       opacity: infoPanel.opacity,
     }" @pointerdown.stop @click.stop>
       <ProjectInfo :title="infoPanel.title" :date="infoPanel.date" :location="infoPanel.location"
-        :category="infoPanel.category" :blocks="infoPanel.blocks" :credits="infoPanel.credits" />
+        :category="infoPanel.category" :blocks="infoPanel.blocks" :credits="infoPanel.credits"
+        :upcoming="infoPanel.upcoming" />
     </div>
 
     <VideoPlayerBar :source-video="playerVideo" :visible="playerVisible" @fullscreen-change="onFullscreenChange"
@@ -60,13 +61,15 @@ const infoPanel = ref({
   category: "",
   blocks: [],
   credits: [],
+  upcoming: [],
 });
 
 const hasInfo = computed(
   () =>
     Boolean(infoPanel.value.title) ||
     (Array.isArray(infoPanel.value.blocks) && infoPanel.value.blocks.length > 0) ||
-    (Array.isArray(infoPanel.value.credits) && infoPanel.value.credits.length > 0),
+    (Array.isArray(infoPanel.value.credits) && infoPanel.value.credits.length > 0) ||
+    (Array.isArray(infoPanel.value.upcoming) && infoPanel.value.upcoming.length > 0),
 );
 
 /** Receive clicks/selection once the rising info is mostly on screen. */
@@ -99,7 +102,13 @@ function onPlayingChange(active) {
 }
 
 watch(
-  () => [infoPanel.value.title, infoPanel.value.blocks, infoPanel.value.credits, hasInfo.value],
+  () => [
+    infoPanel.value.title,
+    infoPanel.value.blocks,
+    infoPanel.value.credits,
+    infoPanel.value.upcoming,
+    hasInfo.value,
+  ],
   async () => {
     await nextTick();
     reportInfoBox();
@@ -203,11 +212,23 @@ onUnmounted(() => {
   pointer-events: none;
   will-change: left, top, opacity;
   width: 70%;
+  box-sizing: border-box;
 }
 
 .blob-info--interactive :deep(.project-info) {
   pointer-events: auto;
   user-select: text;
   cursor: auto;
+}
+
+@media (max-width: 768px) {
+  .blob-info {
+    left: 50% !important;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 50px;
+    overflow-x: clip;
+    box-sizing: border-box;
+  }
 }
 </style>

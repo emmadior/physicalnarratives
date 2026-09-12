@@ -692,6 +692,17 @@ defineExpose({ togglePlay, toggleFullscreen });
 }
 
 @media (max-width: 768px) {
+  .player-controls {
+    /* Match blob-info side padding so the timeline never past 50px. */
+    width: calc(100% - 100px);
+    max-width: none;
+    box-sizing: border-box;
+  }
+
+  .player-timeline {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
 
   .player-timeline::before,
   .player-timeline::after {

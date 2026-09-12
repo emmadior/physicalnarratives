@@ -4,6 +4,12 @@ import { createSanityClient } from "~/lib/sanity/client";
 // @ts-ignore
 import { projectsQuery } from "~/queries/project";
 
+export interface UpcomingEntry {
+  location: string | null;
+  dates: string[] | null;
+  link: string | null;
+}
+
 export interface Project {
   _id: string;
   title: string;
@@ -11,6 +17,7 @@ export interface Project {
   date: string | null;
   location: string | null;
   category: string | null;
+  upcoming: UpcomingEntry[] | null;
   thumbnailUrl: string | null;
   previewUrl: string | null;
   vimeoLink: string | null;

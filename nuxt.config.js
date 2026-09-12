@@ -6,7 +6,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      sanityProjectId: "fnxvzwiw",
+      sanityProjectId: "24nn5cnq",
       sanityDataset: "production",
     },
   },
