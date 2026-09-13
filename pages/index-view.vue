@@ -226,9 +226,7 @@ onUnmounted(() => {
     padding: 72px 20px 40px;
   }
 
-  .index-row {
-    border-bottom: 1px solid rgba(0, 0, 0, 1);
-  }
+  .index-row {}
 
   .index-table__head {
     grid-template-columns: 1fr 1fr;
