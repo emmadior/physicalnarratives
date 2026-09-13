@@ -138,7 +138,6 @@ a {
   display: block;
   text-decoration: none;
   color: inherit;
-  line-height: 1.2;
 }
 
 .back-arrow {
@@ -147,7 +146,6 @@ a {
   background: none;
   color: inherit;
   font: inherit;
-  line-height: 1.25;
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
@@ -196,7 +194,7 @@ a {
   background: none;
   color: inherit;
   font: inherit;
-  line-height: 1.2;
+
   cursor: pointer;
 }
 
@@ -235,7 +233,6 @@ a {
 .menu__link {
   text-decoration: none;
   color: inherit;
-  line-height: 1.25;
   opacity: 0;
   transition: opacity 1s ease;
 }
