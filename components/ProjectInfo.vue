@@ -8,33 +8,25 @@
     </div>
 
     <div class="project-info__content">
-      <div
-        v-if="groupedCredits.length || upcomingEntries.length || category"
-        class="project-info__aside"
-      >
+      <div v-if="groupedCredits.length || category" class="project-info__aside">
+        <div v-if="category" class="project-info__category-block">
+          <p class="project-info__category-value">{{ category }}</p>
+        </div>
+
         <div v-if="groupedCredits.length" class="project-info__credits">
           <h2 class="project-info__section-label">Credits</h2>
           <template v-for="(item, i) in groupedCredits" :key="item._key || i">
-            <ul
-              v-if="item._type === 'list' && item.listItem === 'bullet'"
-              class="project-info__list"
-            >
+            <ul v-if="item._type === 'list' && item.listItem === 'bullet'" class="project-info__list">
               <li v-for="(li, j) in item.items" :key="li._key || j">
                 <PortableTextSpans :spans="li.children" :mark-defs="li.markDefs" />
               </li>
             </ul>
-            <ol
-              v-else-if="item._type === 'list' && item.listItem === 'number'"
-              class="project-info__list"
-            >
+            <ol v-else-if="item._type === 'list' && item.listItem === 'number'" class="project-info__list">
               <li v-for="(li, j) in item.items" :key="li._key || j">
                 <PortableTextSpans :spans="li.children" :mark-defs="li.markDefs" />
               </li>
             </ol>
-            <blockquote
-              v-else-if="item.style === 'blockquote'"
-              class="project-info__quote"
-            >
+            <blockquote v-else-if="item.style === 'blockquote'" class="project-info__quote">
               <PortableTextSpans :spans="item.children" :mark-defs="item.markDefs" />
             </blockquote>
             <h3 v-else-if="item.style === 'h2'" class="project-info__h2">
@@ -48,64 +40,21 @@
             </p>
           </template>
         </div>
-
-        <div v-if="upcomingEntries.length" class="project-info__upcoming">
-          <h2 class="project-info__upcoming-label">Upcoming:</h2>
-          <div
-            v-for="(entry, i) in upcomingEntries"
-            :key="entry._key || i"
-            class="project-info__upcoming-entry"
-          >
-            <p v-if="entry.location" class="project-info__upcoming-location">
-              {{ entry.location }}
-            </p>
-            <p
-              v-for="(d, j) in entry.dates"
-              :key="`${entry._key || i}-${j}`"
-              class="project-info__upcoming-date"
-            >
-              {{ d }}
-            </p>
-            <a
-              v-if="entry.link"
-              class="project-info__upcoming-more"
-              :href="entry.link"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              more info
-            </a>
-          </div>
-        </div>
-
-        <div v-if="category" class="project-info__category-block">
-          <h2 class="project-info__section-label">Category</h2>
-          <p class="project-info__category-value">{{ category }}</p>
-        </div>
       </div>
 
       <div v-if="groupedBody.length" class="project-info__body">
         <template v-for="(item, i) in groupedBody" :key="item._key || i">
-          <ul
-            v-if="item._type === 'list' && item.listItem === 'bullet'"
-            class="project-info__list"
-          >
+          <ul v-if="item._type === 'list' && item.listItem === 'bullet'" class="project-info__list">
             <li v-for="(li, j) in item.items" :key="li._key || j">
               <PortableTextSpans :spans="li.children" :mark-defs="li.markDefs" />
             </li>
           </ul>
-          <ol
-            v-else-if="item._type === 'list' && item.listItem === 'number'"
-            class="project-info__list"
-          >
+          <ol v-else-if="item._type === 'list' && item.listItem === 'number'" class="project-info__list">
             <li v-for="(li, j) in item.items" :key="li._key || j">
               <PortableTextSpans :spans="li.children" :mark-defs="li.markDefs" />
             </li>
           </ol>
-          <blockquote
-            v-else-if="item.style === 'blockquote'"
-            class="project-info__quote"
-          >
+          <blockquote v-else-if="item.style === 'blockquote'" class="project-info__quote">
             <PortableTextSpans :spans="item.children" :mark-defs="item.markDefs" />
           </blockquote>
           <h3 v-else-if="item.style === 'h2'" class="project-info__h2">
@@ -118,6 +67,22 @@
             <PortableTextSpans :spans="item.children" :mark-defs="item.markDefs" />
           </p>
         </template>
+      </div>
+
+      <div v-if="upcomingEntries.length" class="project-info__upcoming">
+        <h2 class="project-info__upcoming-label">Upcoming:</h2>
+        <div v-for="(entry, i) in upcomingEntries" :key="entry._key || i" class="project-info__upcoming-entry">
+          <p v-if="entry.location" class="project-info__upcoming-location">
+            {{ entry.location }}
+          </p>
+          <p v-for="(d, j) in entry.dates" :key="`${entry._key || i}-${j}`" class="project-info__upcoming-date">
+            {{ d }}
+          </p>
+          <a v-if="entry.link" class="project-info__upcoming-more" :href="entry.link" target="_blank"
+            rel="noopener noreferrer">
+            more info
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -227,6 +192,10 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
   gap: 10px;
 }
 
+.project-info__upcoming {
+  grid-column: 1;
+}
+
 .project-info__section-label {
   display: none;
   margin: 0;
@@ -260,8 +229,12 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
   text-underline-offset: 2px;
 }
 
-.project-info__credits + .project-info__upcoming {
+.project-info__credits+.project-info__upcoming {
   margin-top: 1em;
+}
+
+.project-info__body+.project-info__upcoming {
+  margin-top: 0;
 }
 
 .project-info__category-block {
@@ -327,12 +300,43 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
     box-sizing: border-box;
   }
 
+  .project-info__category-block {
+    display: block;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding-top: 0.35em;
+    padding-bottom: 0.35em;
+    margin-bottom: 0.75em;
+  }
+
+  .project-info__category-block .project-info__section-label {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  .project-info__category-block+.project-info__credits .project-info__section-label {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
   .project-info__credits .project-info__section-label {
     margin-top: 0.5em;
   }
 
-  .project-info__category-block {
-    display: block;
+  .project-info__credits {
+    border-bottom: 1px solid #000;
+    padding-bottom: 0.35em;
+    margin-bottom: 0.75em;
+  }
+
+  .project-info__upcoming {
+    grid-column: auto;
+  }
+
+  .project-info__body+.project-info__upcoming {
+    margin-top: 0;
   }
 
   .project-info__category-value {
