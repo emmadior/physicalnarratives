@@ -35,8 +35,10 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
 import { useNuxtApp } from "#app";
 import { useProjectStore } from "~/stores/project";
+import { useSelectionUiStore } from "~/stores/selectionUi";
 
 const projectStore = useProjectStore(useNuxtApp().$pinia);
+const selectionUi = useSelectionUiStore(useNuxtApp().$pinia);
 
 const containerRef = ref(null);
 const canvasRef = ref(null);
@@ -87,6 +89,7 @@ function onSelectionState(state) {
   playerVideo.value = state.fullVideo;
   playerVisible.value = state.selectedIndex >= 0 && state.fullVideoReady;
   if (state.info) infoPanel.value = state.info;
+  selectionUi.setSelected(state.selectedIndex >= 0);
 }
 
 function onPlayClick() {
@@ -99,6 +102,10 @@ function onFullscreenChange(active) {
 
 function onPlayingChange(active) {
   engine?.setPlaying(active);
+}
+
+function onClearSelection() {
+  engine?.clearSelection();
 }
 
 watch(
@@ -117,6 +124,7 @@ watch(
 
 onMounted(async () => {
   console.log("[blob] BlobScene mounted");
+  window.addEventListener("emma:clear-selection", onClearSelection);
 
   try {
     await projectStore.fetchAll();
@@ -151,6 +159,8 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener("emma:clear-selection", onClearSelection);
+  selectionUi.setSelected(false);
   infoObserver?.disconnect();
   infoObserver = null;
   engine?.destroy();

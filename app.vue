@@ -1,10 +1,78 @@
 <template>
   <div class="app">
-    <div class="logo">Emma Portner</div>
-    <div class="description">Physical Narratives</div>
+    <div class="header-left">
+      <NuxtLink to="/" class="logo">Emma Portner</NuxtLink>
+      <button type="button" class="back-arrow" :class="{ 'back-arrow--visible': showBackArrow }"
+        :tabindex="showBackArrow ? 0 : -1" aria-label="Close selection" @click="onBackClick">
+        ←
+      </button>
+    </div>
+
+    <div class="header-right">
+      <div class="description">Physical Narratives</div>
+      <div class="menu" :class="{ 'menu--open': menuOpen }">
+        <button type="button" class="menu__toggle" :aria-expanded="menuOpen" @click="toggleMenu">
+          Menu
+        </button>
+        <div class="menu__panel">
+          <div class="menu__links">
+            <NuxtLink class="menu__link" to="/" @click="closeMenu">Islands</NuxtLink>
+            <NuxtLink class="menu__link" to="/index" @click="closeMenu">Index</NuxtLink>
+            <NuxtLink class="menu__link" to="/info" @click="closeMenu">Info</NuxtLink>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <NuxtPage />
   </div>
 </template>
+
+<script setup>
+import { computed, ref, watch, onMounted, onUnmounted } from "vue";
+import { useRoute, useNuxtApp } from "#app";
+import { useSelectionUiStore } from "~/stores/selectionUi";
+
+const menuOpen = ref(false);
+const route = useRoute();
+const selectionUi = useSelectionUiStore(useNuxtApp().$pinia);
+
+const showBackArrow = computed(
+  () => selectionUi.selected && (route.path === "/" || route.path === ""),
+);
+
+function toggleMenu() {
+  menuOpen.value = !menuOpen.value;
+}
+
+function closeMenu() {
+  menuOpen.value = false;
+}
+
+function onBackClick() {
+  if (!showBackArrow.value) return;
+  window.dispatchEvent(new CustomEvent("emma:clear-selection"));
+}
+
+function onDocPointerDown(event) {
+  if (!menuOpen.value) return;
+  const menu = event.target?.closest?.(".menu");
+  if (!menu) closeMenu();
+}
+
+watch(
+  () => route.fullPath,
+  () => closeMenu(),
+);
+
+onMounted(() => {
+  document.addEventListener("pointerdown", onDocPointerDown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("pointerdown", onDocPointerDown);
+});
+</script>
 
 <style>
 @font-face {
@@ -28,13 +96,13 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   overflow: hidden;
   font-family: "Century", "Century Gothic", Georgia, serif;
-  /* fonst smoothing */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --background-color: #dbdbdb;
+  background: #dbdbdb;
   font-size: 14px;
 }
 
@@ -45,11 +113,10 @@ button {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+}
+
+a {
+  color: inherit;
 }
 
 .app {
@@ -57,17 +124,149 @@ button {
   height: 100%;
 }
 
-.logo {
+.header-left {
   position: fixed;
   top: 20px;
   left: 20px;
-  z-index: 10;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.logo {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  line-height: 1.2;
+}
+
+.back-arrow {
+  margin: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: 1.25;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: 1s ease;
+  transform: translateX(-50px);
+}
+
+.back-arrow--visible {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.back-arrow:focus {
+  outline: none;
+}
+
+.header-right {
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .description {
   position: fixed;
   top: 20px;
   left: 50%;
-  z-index: 10;
+  right: auto;
+  text-align: center;
+  z-index: 20;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  position: fixed;
+  z-index: 20;
+  top: 20px;
+  right: 20px;
+}
+
+.menu__toggle {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.menu__toggle:focus {
+  outline: none;
+}
+
+.menu__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+
+.menu--open .menu__panel {
+  grid-template-rows: 1fr;
+}
+
+.menu__links {
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  padding-top: 0;
+  opacity: 0;
+  transition: opacity 0.25s ease, padding-top 0.35s ease;
+
+}
+
+.menu--open .menu__links {
+
+  opacity: 1;
+}
+
+.menu__link {
+  text-decoration: none;
+  color: inherit;
+  line-height: 1.25;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.menu--open .menu__link {
+  opacity: 1;
+}
+
+.menu__link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (min-width: 769px) {
+  .description {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    right: auto;
+
+    text-align: center;
+  }
+
+  .header-right {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  /* Keep Physical Narratives centered; Menu alone on the right */
+  .header-right .description {
+    position: fixed;
+  }
 }
 </style>
