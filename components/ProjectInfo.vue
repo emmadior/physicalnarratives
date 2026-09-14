@@ -1,10 +1,10 @@
 <template>
   <div v-if="hasContent" class="project-info">
     <div class="project-info__header">
-      <p v-if="date" class="project-info__date">{{ date }}</p>
-      <p v-if="category" class="project-info__category">{{ category }}</p>
-      <p v-if="title" class="project-info__title">{{ title }}</p>
-      <p v-if="location" class="project-info__location">{{ location }}</p>
+      <p class="project-info__date">{{ date }}</p>
+      <p class="project-info__category">{{ category }}</p>
+      <p class="project-info__title">{{ title }}</p>
+      <p class="project-info__location">{{ location }}</p>
     </div>
 
     <div class="project-info__content">
@@ -184,6 +184,9 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 10px;
   border-bottom: 1px solid #000;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  align-items: end;
 }
 
 .project-info__content {

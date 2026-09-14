@@ -299,7 +299,7 @@ function onNativeFullscreenEnter() {
     src.pause();
     if (nativeFsWasPlaying) {
       dst.muted = false;
-      dst.play().catch(() => {});
+      dst.play().catch(() => { });
     }
   }
 
@@ -715,7 +715,7 @@ defineExpose({ togglePlay, toggleFullscreen });
   width: min(720px, 60%);
   z-index: 2;
   padding: 10px 12px;
-  background: var(--background-color, #dbdbdb);
+  background: var(--background-color, #f5f5f5);
 }
 
 .player-controls--hidden {

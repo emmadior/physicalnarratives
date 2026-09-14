@@ -27,6 +27,12 @@ definePageMeta({
   key: "info-page",
 });
 
+useSeoMeta({
+  title: "Info",
+  ogTitle: "Emma Portner - Info",
+  twitterTitle: "Emma Portner - Info",
+});
+
 const blocks = ref([]);
 const error = ref(null);
 
@@ -58,7 +64,7 @@ onUnmounted(() => {
 .info-page {
   min-height: 100%;
   padding: 72px 20px 64px;
-  background: var(--background-color, #dbdbdb);
+
   color: #000;
 }
 

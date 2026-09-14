@@ -36,6 +36,37 @@ import { useSelectionUiStore } from "~/stores/selectionUi";
 const menuOpen = ref(false);
 const route = useRoute();
 const selectionUi = useSelectionUiStore(useNuxtApp().$pinia);
+const config = useRuntimeConfig();
+const requestURL = useRequestURL();
+
+const siteOrigin = computed(() => {
+  const configured = String(config.public.siteUrl || "").replace(/\/$/, "");
+  return configured || requestURL.origin || "";
+});
+
+const shareImage = computed(() => {
+  const origin = siteOrigin.value;
+  return origin ? `${origin}/share.png` : "/share.png";
+});
+
+useHead({
+  titleTemplate: (title) =>
+    title ? `Emma Portner - ${title}` : "Emma Portner",
+});
+
+useSeoMeta({
+  description: "Physical Narratives",
+  ogSiteName: "Emma Portner",
+  ogType: "website",
+  ogDescription: "Physical Narratives",
+  ogImage: shareImage,
+  ogImageAlt: "Emma Portner — Physical Narratives",
+  twitterCard: "summary_large_image",
+  twitterDescription: "Physical Narratives",
+  twitterImage: shareImage,
+  themeColor: "#b2b2b2",
+  robots: "index, follow",
+});
 
 const showBackArrow = computed(
   () => selectionUi.selected && (route.path === "/" || route.path === ""),
@@ -101,8 +132,7 @@ body {
   font-family: "Century", "Century Gothic", Georgia, serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --background-color: #dbdbdb;
-  background: #dbdbdb;
+  background: #f5f5f5;
   font-size: 14px;
 }
 
@@ -119,6 +149,10 @@ a {
   color: inherit;
 }
 
+strong {
+  font-weight: normal !important;
+}
+
 .app {
   width: 100%;
   height: 100%;
@@ -130,7 +164,8 @@ a {
   left: 20px;
   z-index: 20;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  gap: 10px;
   align-items: flex-start;
 }
 
@@ -150,7 +185,10 @@ a {
   opacity: 0;
   pointer-events: none;
   transition: 1s ease;
-  transform: translateX(-50px);
+  transform: translateX(50px);
+  margin-top: 1px;
+  display: inline-block;
+
 }
 
 .back-arrow--visible {
@@ -180,11 +218,12 @@ a {
 .menu {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   position: fixed;
   z-index: 20;
   top: 20px;
   right: 20px;
+  width: fit-content;
 }
 
 .menu__toggle {
@@ -217,7 +256,7 @@ a {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
 
   padding-top: 0;
   opacity: 0;
@@ -244,6 +283,16 @@ a {
 .menu__link:hover {
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.3s;
+}
+
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
 }
 
 @media (min-width: 769px) {

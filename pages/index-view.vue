@@ -2,7 +2,7 @@
   <div class="index-page">
     <p v-if="indexStore.error" class="index-page__error">{{ indexStore.error }}</p>
 
-    <div class="index-table">
+    <div class="index-table" :class="{ 'index-table--has-open': openId }">
       <div class="index-table__head">
         <button type="button" class="index-table__sort" @click="toggleYearSort" aria-label="Sort by year">
           Year
@@ -52,6 +52,12 @@ import PortableTextBlocks from "~/components/PortableTextBlocks.vue";
 definePageMeta({
   path: "/index",
   key: "index-list",
+});
+
+useSeoMeta({
+  title: "Index",
+  ogTitle: "Emma Portner - Index",
+  twitterTitle: "Emma Portner - Index",
 });
 
 const indexStore = useIndexStore(useNuxtApp().$pinia);
@@ -115,7 +121,6 @@ onUnmounted(() => {
 .index-page {
   min-height: 100%;
   padding: 72px 20px 48px;
-  background: var(--background-color, #dbdbdb);
   color: #000;
 }
 
@@ -150,12 +155,19 @@ onUnmounted(() => {
 
 .index-row {
   color: #000;
-  transition: color 0.3s ease, border-color 0.3s ease;
+  opacity: 1;
+  transition:
+    opacity 0.5s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
 }
 
-.index-row--open {
-  color: #9749e5;
+.index-table--has-open .index-row {
+  opacity: 0.3;
+}
 
+.index-table--has-open .index-row--open {
+  opacity: 1;
 }
 
 .index-row__main {
