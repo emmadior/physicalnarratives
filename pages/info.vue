@@ -75,7 +75,6 @@ onUnmounted(() => {
 .info-page__top {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
   align-items: end;
   padding-bottom: 0.35em;
   border-bottom: 1px solid #000;
@@ -90,7 +89,7 @@ onUnmounted(() => {
 .info-page__body {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+
   padding-top: 0.85em;
 }
 

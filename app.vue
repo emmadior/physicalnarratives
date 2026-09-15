@@ -184,7 +184,7 @@ strong {
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
-  transition: 1s ease;
+  transition: 500ms ease;
   transform: translateX(50px);
   margin-top: 1px;
   display: inline-block;
