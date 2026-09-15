@@ -173,19 +173,27 @@ onUnmounted(() => {
 .index-row__main {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
-
-  align-items: center;
+  align-items: start;
+  column-gap: 0.5em;
+  row-gap: 0;
   width: 100%;
-  height: 18.5px;
+  min-height: 1.15em;
   margin: 0;
-  padding: 0;
+  padding: 0.12em 0;
   border: none;
   background: none;
   color: inherit;
   font: inherit;
-  line-height: 18.5px;
+  line-height: 1.15;
   text-align: left;
   cursor: pointer;
+}
+
+.index-row__title,
+.index-row__category,
+.index-row__place {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .index-row__main:focus {

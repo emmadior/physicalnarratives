@@ -16,6 +16,17 @@
       </div>
     </button>
 
+    <div
+      v-show="loadingDots.visible"
+      class="blob-loading-dots"
+      aria-hidden="true"
+      :style="{ left: `${loadingDots.x}px`, top: `${loadingDots.y}px` }"
+    >
+      <span class="blob-loading-dots__dot" />
+      <span class="blob-loading-dots__dot" />
+      <span class="blob-loading-dots__dot" />
+    </div>
+
     <div v-show="hasInfo" ref="infoRef" class="blob-info" :class="{ 'blob-info--interactive': infoInteractive }" :style="{
       left: `${infoPanel.x}px`,
       top: `${infoPanel.y}px`,
@@ -50,6 +61,7 @@ let engine = null;
 let infoObserver = null;
 
 const playButton = ref({ visible: false, x: 0, y: 0, opacity: 0 });
+const loadingDots = ref({ visible: false, x: 0, y: 0 });
 const playerVideo = ref(null);
 const playerVisible = ref(false);
 const playerDimmed = ref(false);
@@ -111,6 +123,7 @@ function updatePlayerOverlap() {
 
 function onSelectionState(state) {
   playButton.value = state.playButton;
+  loadingDots.value = state.loadingDots || { visible: false, x: 0, y: 0 };
   playerVideo.value = state.fullVideo;
   playerVisible.value = state.selectedIndex >= 0 && state.fullVideoReady;
   if (state.info) infoPanel.value = state.info;
@@ -239,6 +252,43 @@ onUnmounted(() => {
 
 .blob-play-btn__text {
   color: #fff;
+}
+
+.blob-loading-dots {
+  position: fixed;
+  z-index: 14;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.blob-loading-dots__dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.25;
+  animation: blob-loading-blink 1.2s ease-in-out infinite;
+}
+
+.blob-loading-dots__dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.blob-loading-dots__dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blob-loading-blink {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .blob-info {
