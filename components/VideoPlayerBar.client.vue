@@ -1,6 +1,7 @@
 <template>
   <div ref="playerContainer" class="player-root" :class="{
     'player-root--visible': visible,
+    'player-root--dimmed': dimmed && !isFullscreen,
     'player-root--fullscreen': isFullscreen,
     'player-root--hide-cursor': isFullscreen && !showControls,
   }">
@@ -60,6 +61,8 @@ const props = defineProps({
   /** Off-screen video feeding the shader. */
   sourceVideo: { type: Object, default: null },
   visible: { type: Boolean, default: false },
+  /** Hide controls while rising project info overlaps them. */
+  dimmed: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["fullscreen-change", "playing-change"]);
@@ -92,7 +95,12 @@ let nativeFsWasPlaying = false;
 /** @type {(() => void) | null} */
 let removeResizeListener = null;
 
-const controlsVisible = computed(() => props.visible && (!isFullscreen.value || showControls.value));
+const controlsVisible = computed(() => {
+  if (!props.visible) return false;
+  if (isFullscreen.value) return showControls.value;
+  if (props.dimmed) return false;
+  return true;
+});
 
 const displayTime = computed(() =>
   formatTime(isHovering.value ? hoverTime.value : currentTime.value)
@@ -656,6 +664,10 @@ defineExpose({ togglePlay, toggleFullscreen });
   pointer-events: auto;
 }
 
+.player-root--dimmed {
+  pointer-events: none;
+}
+
 .player-root--fullscreen {
   inset: 0;
   background: black;
@@ -707,7 +719,7 @@ defineExpose({ togglePlay, toggleFullscreen });
   font-family: "Century", "Century Gothic", Georgia, serif;
   font-size: 13px;
   color: #000;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.4s ease;
 }
 
 .player-root--fullscreen .player-controls {

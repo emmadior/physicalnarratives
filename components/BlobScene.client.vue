@@ -26,8 +26,8 @@
         :upcoming="infoPanel.upcoming" />
     </div>
 
-    <VideoPlayerBar :source-video="playerVideo" :visible="playerVisible" @fullscreen-change="onFullscreenChange"
-      @playing-change="onPlayingChange" />
+    <VideoPlayerBar :source-video="playerVideo" :visible="playerVisible" :dimmed="playerDimmed"
+      @fullscreen-change="onFullscreenChange" @playing-change="onPlayingChange" />
   </div>
 </template>
 
@@ -52,6 +52,7 @@ let infoObserver = null;
 const playButton = ref({ visible: false, x: 0, y: 0, opacity: 0 });
 const playerVideo = ref(null);
 const playerVisible = ref(false);
+const playerDimmed = ref(false);
 const infoPanel = ref({
   visible: false,
   x: 0,
@@ -82,6 +83,30 @@ function reportInfoBox() {
   if (!el || !engine) return;
   const rect = el.getBoundingClientRect();
   engine.setInfoBox(rect.width, rect.height);
+  updatePlayerOverlap();
+}
+
+/** Fade player controls while the rising info box intersects them. */
+function updatePlayerOverlap() {
+  if (!playerVisible.value || (infoPanel.value.opacity || 0) < 0.02) {
+    playerDimmed.value = false;
+    return;
+  }
+  const infoEl = infoRef.value;
+  const controlsEl = containerRef.value?.querySelector(".player-controls");
+  if (!infoEl || !controlsEl) {
+    playerDimmed.value = false;
+    return;
+  }
+  const a = infoEl.getBoundingClientRect();
+  const b = controlsEl.getBoundingClientRect();
+  if (b.height < 1) {
+    playerDimmed.value = false;
+    return;
+  }
+  const pad = 10;
+  playerDimmed.value =
+    a.bottom > b.top - pad && a.top < b.bottom + pad;
 }
 
 function onSelectionState(state) {
@@ -90,6 +115,7 @@ function onSelectionState(state) {
   playerVisible.value = state.selectedIndex >= 0 && state.fullVideoReady;
   if (state.info) infoPanel.value = state.info;
   selectionUi.setSelected(state.selectedIndex >= 0);
+  updatePlayerOverlap();
 }
 
 function onPlayClick() {
