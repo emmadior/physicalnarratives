@@ -59,6 +59,10 @@ const infoRef = ref(null);
 let engine = null;
 /** @type {ResizeObserver | null} */
 let infoObserver = null;
+/** Avoid restarting the engine more than once when FPS stays low. */
+let perfAdapted = false;
+/** @type {typeof import('~/lib/blob-engine.js').createBlobEngine | null} */
+let createBlobEngine = null;
 
 const playButton = ref({ visible: false, x: 0, y: 0, opacity: 0 });
 const loadingDots = ref({ visible: false, x: 0, y: 0 });
@@ -147,6 +151,48 @@ function onClearSelection() {
   engine?.clearSelection();
 }
 
+function bindInfoObserver() {
+  infoObserver?.disconnect();
+  infoObserver = null;
+  if (infoRef.value && typeof ResizeObserver !== "undefined") {
+    infoObserver = new ResizeObserver(() => reportInfoBox());
+    infoObserver.observe(infoRef.value);
+    reportInfoBox();
+  }
+}
+
+/**
+ * @param {{ lowPower?: boolean, maxBlobs?: number }} [opts]
+ */
+function startEngine(opts = {}) {
+  if (!createBlobEngine || !canvasRef.value || !containerRef.value) return;
+
+  engine?.destroy();
+  engine = null;
+  selectionUi.setSelected(false);
+
+  engine = createBlobEngine(canvasRef.value, containerRef.value, {
+    onSelectionState,
+    onPerfDegrade: handlePerfDegrade,
+    projects: projectStore.projects,
+    lowPower: Boolean(opts.lowPower),
+    maxBlobs: opts.maxBlobs,
+  });
+}
+
+function handlePerfDegrade(info) {
+  if (perfAdapted) return;
+  perfAdapted = true;
+  console.warn(
+    "[blob] adapting scene for low FPS — limiting to 3 blobs",
+    info,
+  );
+  import("~/lib/perf-adapt.js").then(({ LOW_POWER_MAX_BLOBS }) => {
+    startEngine({ lowPower: true, maxBlobs: LOW_POWER_MAX_BLOBS });
+    nextTick(() => bindInfoObserver());
+  });
+}
+
 watch(
   () => [
     infoPanel.value.title,
@@ -173,25 +219,19 @@ onMounted(async () => {
   }
 
   try {
-    const { createBlobEngine } = await import("~/lib/blob-engine.js");
+    const mod = await import("~/lib/blob-engine.js");
+    createBlobEngine = mod.createBlobEngine;
     if (!canvasRef.value || !containerRef.value) {
       console.warn("[blob] canvas/container refs missing, engine not started");
       return;
     }
 
     console.log("[blob] creating engine with projects", projectStore.projects);
-    engine = createBlobEngine(canvasRef.value, containerRef.value, {
-      onSelectionState,
-      projects: projectStore.projects,
-    });
+    startEngine();
     console.log("[blob] engine created");
 
     await nextTick();
-    if (infoRef.value && typeof ResizeObserver !== "undefined") {
-      infoObserver = new ResizeObserver(() => reportInfoBox());
-      infoObserver.observe(infoRef.value);
-      reportInfoBox();
-    }
+    bindInfoObserver();
   } catch (err) {
     console.error("[blob] engine init failed", err);
   }

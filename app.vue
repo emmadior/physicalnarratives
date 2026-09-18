@@ -1,7 +1,7 @@
 <template>
   <div class="app">
     <div class="header-left">
-      <NuxtLink to="/" class="logo">Emma Portner</NuxtLink>
+      <NuxtLink to="/" class="logo" @click="onLogoClick">Emma Portner</NuxtLink>
       <button type="button" class="back-arrow" :class="{ 'back-arrow--visible': showBackArrow }"
         :tabindex="showBackArrow ? 0 : -1" aria-label="Close selection" @click="onBackClick">
         ←
@@ -83,6 +83,12 @@ function closeMenu() {
 function onBackClick() {
   if (!showBackArrow.value) return;
   window.dispatchEvent(new CustomEvent("emma:clear-selection"));
+}
+
+function onLogoClick(event) {
+  if (!showBackArrow.value) return;
+  event.preventDefault();
+  onBackClick();
 }
 
 function onDocPointerDown(event) {
