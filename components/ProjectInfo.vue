@@ -182,7 +182,6 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
 .project-info__header {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 10px;
   border-bottom: 1px solid #000;
   padding-bottom: 5px;
   margin-bottom: 5px;
@@ -192,7 +191,6 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
 .project-info__content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
 }
 
 .project-info__upcoming {
@@ -213,11 +211,11 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
 }
 
 .project-info__upcoming-entry {
-  margin-top: 0.75em;
+  margin-top: 10px;
 }
 
 .project-info__upcoming-entry:first-of-type {
-  margin-top: 0.35em;
+  margin-top: 10px;
 }
 
 .project-info__upcoming-location,
@@ -233,7 +231,11 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
 }
 
 .project-info__credits+.project-info__upcoming {
-  margin-top: 1em;
+  margin-top: 10px;
+}
+
+.project-info__credits {
+  padding-right: 20px;
 }
 
 .project-info__body+.project-info__upcoming {
@@ -261,6 +263,11 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
     padding-top: 0;
   }
 
+  .project-info__credits {
+    padding-right: 0;
+    padding-bottom: 10px;
+  }
+
   .project-info__header {
     grid-template-columns: 1fr 1fr;
     border-bottom: none;
@@ -274,22 +281,21 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
   .project-info__content {
     display: flex;
     flex-direction: column;
-    gap: 0;
   }
 
   .project-info__section-label {
     display: block;
     border-top: 1px solid #000;
-    padding-top: 0.35em;
-    margin-top: 0.75em;
+    padding-top: 10px;
+    margin-top: 10px;
     max-width: 100%;
     box-sizing: border-box;
   }
 
   .project-info__upcoming-label {
     border-top: 1px solid #000;
-    padding-top: 0.35em;
-    margin-top: 0.75em;
+    padding-top: 10px;
+    margin-top: 10px;
   }
 
   .project-info__header,
@@ -307,9 +313,9 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
     display: block;
     border-top: 1px solid #000;
     border-bottom: 1px solid #000;
-    padding-top: 0.35em;
-    padding-bottom: 0.35em;
-    margin-bottom: 0.75em;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
   }
 
   .project-info__category-block .project-info__section-label {
@@ -325,13 +331,13 @@ const groupedCredits = computed(() => groupBlocks(props.credits));
   }
 
   .project-info__credits .project-info__section-label {
-    margin-top: 0.5em;
+    margin-top: 10px;
   }
 
   .project-info__credits {
     border-bottom: 1px solid #000;
-    padding-bottom: 0.35em;
-    margin-bottom: 0.75em;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
   }
 
   .project-info__upcoming {

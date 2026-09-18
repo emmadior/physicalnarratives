@@ -11,6 +11,9 @@
       <div class="info-page__spacer" aria-hidden="true" />
       <div class="info-page__text">
         <PortableTextBlocks v-if="blocks.length" :blocks="blocks" />
+        <p class="info-page__imprint">
+          <NuxtLink to="/imprint">Imprint</NuxtLink>
+        </p>
       </div>
     </div>
   </div>
@@ -69,14 +72,15 @@ onUnmounted(() => {
 }
 
 .info-page__error {
-  margin-bottom: 1rem;
+  margin-bottom: 10px;
 }
 
 .info-page__top {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: end;
-  padding-bottom: 0.35em;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
   border-bottom: 1px solid #000;
 }
 
@@ -90,7 +94,6 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
 
-  padding-top: 0.85em;
 }
 
 .info-page__text {
@@ -98,11 +101,19 @@ onUnmounted(() => {
 }
 
 .info-page__text :deep(.pt-blocks__p) {
-  margin: 0 0 0.85em;
+  margin: 0 0 10px;
 }
 
 .info-page__text :deep(.pt-blocks__p + .pt-blocks__p) {
-  text-indent: 1.5em;
+  text-indent: 10px;
+}
+
+.info-page__imprint {
+  margin: 10px 0 0;
+}
+
+.info-page__imprint a {
+  text-underline-offset: 2px;
 }
 
 @media (max-width: 768px) {
@@ -112,7 +123,7 @@ onUnmounted(() => {
 
   .info-page__top {
     grid-template-columns: auto 1fr;
-    column-gap: 1.5rem;
+    column-gap: 10px;
   }
 
   .info-page__body {

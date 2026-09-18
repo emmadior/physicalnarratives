@@ -125,13 +125,15 @@ onUnmounted(() => {
 }
 
 .index-page__error {
-  margin-bottom: 1rem;
+  margin-bottom: 10px;
 }
 
 .index-table__head {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
-  padding-bottom: 0.35em;
+  align-items: end;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
   border-bottom: 1px solid #000;
 }
 
@@ -243,13 +245,15 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .index-page {
-    padding: 72px 20px 40px;
+    padding: 88px 20px 40px;
   }
 
 
 
+
+
   .index-table__head {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 2fr;
   }
 
   .index-table__col--category,
@@ -258,7 +262,7 @@ onUnmounted(() => {
   }
 
   .index-row__main {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 2fr;
   }
 
   .index-row__category,
