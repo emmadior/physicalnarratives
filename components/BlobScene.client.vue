@@ -183,14 +183,10 @@ function startEngine(opts = {}) {
 function handlePerfDegrade(info) {
   if (perfAdapted) return;
   perfAdapted = true;
-  console.warn(
-    "[blob] adapting scene for low FPS — limiting to 3 blobs",
-    info,
-  );
-  import("~/lib/perf-adapt.js").then(({ LOW_POWER_MAX_BLOBS }) => {
-    startEngine({ lowPower: true, maxBlobs: LOW_POWER_MAX_BLOBS });
-    nextTick(() => bindInfoObserver());
-  });
+  // Engine already culled blobs in-place (no WebGL recreate — that blanked
+  // older Safari). This flag just prevents repeat work.
+  console.warn("[blob] low-power adapt complete", info);
+  engine?.adaptToLowPower?.();
 }
 
 watch(
@@ -227,9 +223,18 @@ onMounted(async () => {
     }
 
     console.log("[blob] creating engine with projects", projectStore.projects);
-    startEngine();
-    console.log("[blob] engine created");
-
+    const { readPerfDebugFlags, LOW_POWER_MAX_BLOBS } = await import(
+      "~/lib/perf-adapt.js"
+    );
+    const flags = readPerfDebugFlags();
+    if (flags.lowPower) {
+      perfAdapted = true;
+      startEngine({ lowPower: true, maxBlobs: LOW_POWER_MAX_BLOBS });
+      console.log("[blob] engine created in lowPower mode (?lowPower=1)");
+    } else {
+      startEngine();
+      console.log("[blob] engine created", flags.simLag ? "(simLag=1)" : "");
+    }
     await nextTick();
     bindInfoObserver();
   } catch (err) {
