@@ -44,25 +44,44 @@ const requestURL = useRequestURL();
 
 const siteOrigin = computed(() => {
   const configured = String(config.public.siteUrl || "").replace(/\/$/, "");
-  return configured || requestURL.origin || "";
+  if (configured) return configured;
+  const origin = requestURL.origin || "";
+  // Static builds without siteUrl used to bake http://localhost into OG tags.
+  if (!origin || /localhost|127\.0\.0\.1/i.test(origin)) {
+    return "https://emmaportner.com";
+  }
+  return origin;
 });
 
-const shareImage = computed(() => {
-  const origin = siteOrigin.value;
-  return origin ? `${origin}/share.png` : "/share.png";
-});
+const shareImage = computed(() => `${siteOrigin.value}/share.png`);
 
 useHead({
   titleTemplate: (title) =>
     title ? `Emma Portner - ${title}` : "Emma Portner",
+  link: [
+    {
+      rel: "canonical",
+      href: computed(
+        () =>
+          `${siteOrigin.value}${route.path === "/" ? "/" : route.path}`,
+      ),
+    },
+  ],
 });
 
 useSeoMeta({
   description: "Physical Narratives",
   ogSiteName: "Emma Portner",
   ogType: "website",
+  ogUrl: computed(
+    () => `${siteOrigin.value}${route.path === "/" ? "/" : route.path}`,
+  ),
   ogDescription: "Physical Narratives",
   ogImage: shareImage,
+  ogImageSecureUrl: shareImage,
+  ogImageType: "image/png",
+  ogImageWidth: 3456,
+  ogImageHeight: 1914,
   ogImageAlt: "Emma Portner — Physical Narratives",
   twitterCard: "summary_large_image",
   twitterDescription: "Physical Narratives",
