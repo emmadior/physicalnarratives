@@ -149,6 +149,7 @@ onUnmounted(() => {
 
   to {
     opacity: 0;
+    display: none;
   }
 }
 
