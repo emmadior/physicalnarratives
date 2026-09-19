@@ -219,7 +219,8 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: end;
-  padding-bottom: 0.35em;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
   border-bottom: 1px solid #000;
 }
 
@@ -232,7 +233,6 @@ onUnmounted(() => {
 .imprint-page__body {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  padding-top: 0.85em;
 }
 
 .imprint-page__text {
@@ -240,11 +240,11 @@ onUnmounted(() => {
 }
 
 .imprint-section {
-  margin: 0 0 1.35em;
+  margin: 0 0 10px;
 }
 
 .imprint-section__title {
-  margin: 0 0 0.45em;
+  margin: 0 0 10px;
   font-size: inherit;
   font-weight: inherit;
   text-decoration: underline;
@@ -252,7 +252,7 @@ onUnmounted(() => {
 }
 
 .imprint-section p {
-  margin: 0 0 0.75em;
+  margin: 0 0 10px;
 }
 
 .imprint-section p:last-child {
@@ -270,7 +270,7 @@ onUnmounted(() => {
 
   .imprint-page__top {
     grid-template-columns: auto 1fr;
-    column-gap: 1.5rem;
+    column-gap: 10px;
   }
 
   .imprint-page__body {
