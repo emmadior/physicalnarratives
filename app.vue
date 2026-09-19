@@ -1,5 +1,8 @@
 <template>
   <div class="app">
+    <div class="loader">
+
+    </div>
     <div class="header-left">
       <NuxtLink to="/" class="logo" @click="onLogoClick">Emma Portner</NuxtLink>
       <button type="button" class="back-arrow" :class="{ 'back-arrow--visible': showBackArrow }"
@@ -126,6 +129,27 @@ onUnmounted(() => {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+.loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #f5f5f5;
+  z-index: 5;
+  animation: fadeOut 1s ease-in-out forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 html,
