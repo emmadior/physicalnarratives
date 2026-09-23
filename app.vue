@@ -19,9 +19,15 @@
         </button>
         <div class="menu__panel">
           <div class="menu__links">
-            <NuxtLink class="menu__link" to="/" @click="closeMenu">Islands</NuxtLink>
-            <NuxtLink class="menu__link" to="/index" @click="closeMenu">Index</NuxtLink>
-            <NuxtLink class="menu__link" to="/info" @click="closeMenu">Info</NuxtLink>
+            <NuxtLink
+              v-for="item in visibleMenuItems"
+              :key="item.to"
+              class="menu__link"
+              :to="item.to"
+              @click="closeMenu"
+            >
+              {{ item.label }}
+            </NuxtLink>
           </div>
         </div>
       </div>
@@ -36,11 +42,31 @@ import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 import { useRoute, useNuxtApp } from "#app";
 import { useSelectionUiStore } from "~/stores/selectionUi";
 
+const MENU_ITEMS = [
+  { to: "/", label: "Islands" },
+  { to: "/index", label: "Index" },
+  { to: "/info", label: "Info" },
+  { to: "/contact", label: "Contact" },
+];
+const MENU_CLOSE_MS = 400;
+
 const menuOpen = ref(false);
 const route = useRoute();
 const selectionUi = useSelectionUiStore(useNuxtApp().$pinia);
 const config = useRuntimeConfig();
 const requestURL = useRequestURL();
+
+function menuPath(path) {
+  return !path || path === "" ? "/" : path;
+}
+
+/** Frozen while open so the current link doesn't vanish mid-close after a click. */
+const menuHiddenPath = ref(menuPath(route.path));
+let menuCloseTimer = null;
+
+const visibleMenuItems = computed(() =>
+  MENU_ITEMS.filter((item) => item.to !== menuHiddenPath.value),
+);
 
 const siteOrigin = computed(() => {
   const configured = String(config.public.siteUrl || "").replace(/\/$/, "");
@@ -95,11 +121,28 @@ const showBackArrow = computed(
 );
 
 function toggleMenu() {
-  menuOpen.value = !menuOpen.value;
+  if (menuOpen.value) {
+    closeMenu();
+    return;
+  }
+  if (menuCloseTimer) {
+    clearTimeout(menuCloseTimer);
+    menuCloseTimer = null;
+  }
+  menuHiddenPath.value = menuPath(route.path);
+  menuOpen.value = true;
 }
 
 function closeMenu() {
+  if (!menuOpen.value) return;
   menuOpen.value = false;
+  if (menuCloseTimer) clearTimeout(menuCloseTimer);
+  menuCloseTimer = setTimeout(() => {
+    menuCloseTimer = null;
+    if (!menuOpen.value) {
+      menuHiddenPath.value = menuPath(route.path);
+    }
+  }, MENU_CLOSE_MS);
 }
 
 function onBackClick() {
@@ -130,6 +173,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener("pointerdown", onDocPointerDown);
+  if (menuCloseTimer) clearTimeout(menuCloseTimer);
 });
 </script>
 

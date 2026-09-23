@@ -4,8 +4,9 @@
       <a
         v-if="linkHref(span)"
         :href="linkHref(span)"
-        target="_blank"
-        rel="noreferrer noopener"
+        :class="{ 'pt-link--mailto': isMailto(span) }"
+        :target="isMailto(span) ? undefined : '_blank'"
+        :rel="isMailto(span) ? undefined : 'noreferrer noopener'"
       ><component :is="innerTag(span)">{{ span.text }}</component></a>
       <component v-else :is="innerTag(span)">{{ span.text }}</component>
     </template>
@@ -33,5 +34,9 @@ function linkHref(span) {
     if (def?.href) return def.href;
   }
   return "";
+}
+
+function isMailto(span) {
+  return String(linkHref(span) || "").toLowerCase().startsWith("mailto:");
 }
 </script>

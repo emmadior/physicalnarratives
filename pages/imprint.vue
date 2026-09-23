@@ -211,7 +211,7 @@ onUnmounted(() => {
 <style scoped>
 .imprint-page {
   min-height: 100%;
-  padding: 72px 20px 64px;
+  padding: 76px 20px 64px;
   color: #000;
 }
 
@@ -265,7 +265,7 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .imprint-page {
-    padding: 88px 20px 48px;
+    padding: 75px 20px 48px;
   }
 
   .imprint-page__top {

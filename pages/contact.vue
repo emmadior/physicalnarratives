@@ -1,19 +1,16 @@
 <template>
-  <div class="info-page">
-    <p v-if="error" class="info-page__error">{{ error }}</p>
+  <div class="contact-page">
+    <p v-if="error" class="contact-page__error">{{ error }}</p>
 
-    <div class="info-page__top">
-      <div class="info-page__label">Info</div>
-      <h1 class="info-page__heading">About Emma Portner</h1>
+    <div class="contact-page__top">
+      <div class="contact-page__label">Contact</div>
+      <h1 class="contact-page__heading">Contact</h1>
     </div>
 
-    <div class="info-page__body">
-      <div class="info-page__spacer" aria-hidden="true" />
-      <div class="info-page__text">
+    <div class="contact-page__body">
+      <div class="contact-page__spacer" aria-hidden="true" />
+      <div class="contact-page__text">
         <PortableTextBlocks v-if="blocks.length" :blocks="blocks" />
-        <p class="info-page__imprint">
-          <NuxtLink to="/imprint">Imprint</NuxtLink>
-        </p>
       </div>
     </div>
   </div>
@@ -22,26 +19,26 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
 import { createSanityClient } from "~/lib/sanity/client";
-import { infoQuery } from "~/queries/info";
+import { contactQuery } from "~/queries/contact";
 import PortableTextBlocks from "~/components/PortableTextBlocks.vue";
 
 definePageMeta({
-  path: "/info",
-  key: "info-page",
+  path: "/contact",
+  key: "contact-page",
 });
 
 useSeoMeta({
-  title: "Info",
-  ogTitle: "Emma Portner - Info",
-  twitterTitle: "Emma Portner - Info",
+  title: "Contact",
+  ogTitle: "Emma Portner - Contact",
+  twitterTitle: "Emma Portner - Contact",
 });
 
 const blocks = ref([]);
 const error = ref(null);
 
 onMounted(async () => {
-  document.documentElement.classList.add("info-route");
-  document.body.classList.add("info-route");
+  document.documentElement.classList.add("contact-route");
+  document.body.classList.add("contact-route");
 
   try {
     const config = useRuntimeConfig();
@@ -49,33 +46,34 @@ onMounted(async () => {
       projectId: config.public.sanityProjectId,
       dataset: config.public.sanityDataset,
     });
-    const doc = await client.fetch(infoQuery);
+    const doc = await client.fetch(contactQuery);
     blocks.value = Array.isArray(doc?.text) ? doc.text : [];
   } catch (err) {
-    console.error("[info] fetch failed", err);
-    error.value = err instanceof Error ? err.message : "Failed to load info";
+    console.error("[contact] fetch failed", err);
+    error.value =
+      err instanceof Error ? err.message : "Failed to load contact";
   }
 });
 
 onUnmounted(() => {
-  document.documentElement.classList.remove("info-route");
-  document.body.classList.remove("info-route");
+  document.documentElement.classList.remove("contact-route");
+  document.body.classList.remove("contact-route");
 });
 </script>
 
 <style scoped>
-.info-page {
+.contact-page {
   min-height: 100%;
   padding: 76px 20px 64px;
 
   color: #000;
 }
 
-.info-page__error {
+.contact-page__error {
   margin-bottom: 10px;
 }
 
-.info-page__top {
+.contact-page__top {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: end;
@@ -84,67 +82,55 @@ onUnmounted(() => {
   border-bottom: 1px solid #000;
 }
 
-.info-page__heading {
+.contact-page__heading {
   margin: 0;
   font-size: inherit;
   font-weight: inherit;
 }
 
-.info-page__body {
+.contact-page__body {
   display: grid;
   grid-template-columns: 1fr 1fr;
 
 }
 
-.info-page__text {
+.contact-page__text {
   min-width: 0;
 }
 
-.info-page__text :deep(.pt-blocks__p) {
+.contact-page__text :deep(.pt-blocks__p) {
   margin: 0 0 10px;
 }
 
-.info-page__text :deep(.pt-blocks__p + .pt-blocks__p) {
-  text-indent: 10px;
-}
-
-.info-page__imprint {
-  margin: 10px 0 0;
-}
-
-.info-page__imprint a {
-  text-underline-offset: 2px;
-}
-
 @media (max-width: 768px) {
-  .info-page {
+  .contact-page {
     padding: 75px 20px 48px;
   }
 
-  .info-page__top {
+  .contact-page__top {
     grid-template-columns: auto 1fr;
     column-gap: 10px;
   }
 
-  .info-page__body {
+  .contact-page__body {
     grid-template-columns: 1fr;
   }
 
-  .info-page__spacer {
+  .contact-page__spacer {
     display: none;
   }
 }
 </style>
 
 <style>
-html.info-route,
-body.info-route {
+html.contact-route,
+body.contact-route {
   overflow: auto;
   height: auto;
   min-height: 100%;
 }
 
-body.info-route .app {
+body.contact-route .app {
   height: auto;
   min-height: 100%;
 }

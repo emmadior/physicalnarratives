@@ -120,7 +120,7 @@ onUnmounted(() => {
 <style scoped>
 .index-page {
   min-height: 100%;
-  padding: 72px 20px 48px;
+  padding: 76px 20px 48px;
   color: #000;
 }
 
@@ -245,7 +245,7 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .index-page {
-    padding: 88px 20px 40px;
+    padding: 75px 20px 40px;
   }
 
 
