@@ -16,12 +16,8 @@
       </div>
     </button>
 
-    <div
-      v-show="loadingDots.visible"
-      class="blob-loading-dots"
-      aria-hidden="true"
-      :style="{ left: `${loadingDots.x}px`, top: `${loadingDots.y}px` }"
-    >
+    <div v-show="loadingDots.visible" class="blob-loading-dots" aria-hidden="true"
+      :style="{ left: `${loadingDots.x}px`, top: `${loadingDots.y}px` }">
       <span class="blob-loading-dots__dot" />
       <span class="blob-loading-dots__dot" />
       <span class="blob-loading-dots__dot" />
@@ -37,17 +33,11 @@
         :upcoming="infoPanel.upcoming" />
     </div>
 
-    <div
-      class="blob-scroll-hint"
-      :class="{
-        'blob-scroll-hint--visible': scrollHintVisible,
-        'blob-scroll-hint--blink': scrollHintBlinking,
-      }"
-      role="status"
-      aria-live="polite"
-      :aria-hidden="scrollHintVisible ? 'false' : 'true'"
-    >
-      <span class="blob-scroll-hint__mark" aria-hidden="true">(!)</span>
+    <div class="blob-scroll-hint" :class="{
+      'blob-scroll-hint--visible': scrollHintVisible,
+      'blob-scroll-hint--blink': scrollHintBlinking,
+    }" role="status" aria-live="polite" :aria-hidden="scrollHintVisible ? 'false' : 'true'">
+      <span class="blob-scroll-hint__mark" aria-hidden="true">( ! )</span>
       <p class="blob-scroll-hint__text">
         Scroll down for more info
       </p>
@@ -499,10 +489,12 @@ onUnmounted(() => {
 }
 
 @keyframes blob-loading-blink {
+
   0%,
   100% {
     opacity: 0.2;
   }
+
   50% {
     opacity: 1;
   }
@@ -554,6 +546,7 @@ onUnmounted(() => {
 }
 
 @keyframes blob-scroll-hint-blink {
+
   0%,
   100% {
     background-color: #f5f5f5;
@@ -561,8 +554,8 @@ onUnmounted(() => {
   }
 
   50% {
-    background-color: #000;
-    color: #f5f5f5;
+    background-color: #b7b7b7;
+    color: #000;
   }
 }
 
