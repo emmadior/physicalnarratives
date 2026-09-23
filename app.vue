@@ -19,13 +19,8 @@
         </button>
         <div class="menu__panel">
           <div class="menu__links">
-            <NuxtLink
-              v-for="item in visibleMenuItems"
-              :key="item.to"
-              class="menu__link"
-              :to="item.to"
-              @click="closeMenu"
-            >
+            <NuxtLink v-for="item in visibleMenuItems" :key="item.to" class="menu__link" :to="item.to"
+              @click="closeMenu">
               {{ item.label }}
             </NuxtLink>
           </div>
@@ -303,7 +298,7 @@ strong {
 .description {
   position: fixed;
   top: 20px;
-  left: 50%;
+  left: 40%;
   right: auto;
   text-align: center;
   z-index: 20;
@@ -317,7 +312,7 @@ strong {
   z-index: 20;
   top: 20px;
   right: 20px;
-  width: fit-content;
+  width: 59px;
 }
 
 .menu__toggle {
