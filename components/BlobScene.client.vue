@@ -37,6 +37,22 @@
         :upcoming="infoPanel.upcoming" />
     </div>
 
+    <div
+      class="blob-scroll-hint"
+      :class="{
+        'blob-scroll-hint--visible': scrollHintVisible,
+        'blob-scroll-hint--blink': scrollHintBlinking,
+      }"
+      role="status"
+      aria-live="polite"
+      :aria-hidden="scrollHintVisible ? 'false' : 'true'"
+    >
+      <span class="blob-scroll-hint__mark" aria-hidden="true">(!)</span>
+      <p class="blob-scroll-hint__text">
+        Scroll down for more info
+      </p>
+    </div>
+
     <VideoPlayerBar :source-video="playerVideo" :visible="playerVisible" :dimmed="playerDimmed"
       @fullscreen-change="onFullscreenChange" @playing-change="onPlayingChange" />
   </div>
@@ -47,6 +63,13 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
 import { useNuxtApp } from "#app";
 import { useProjectStore } from "~/stores/project";
 import { useSelectionUiStore } from "~/stores/selectionUi";
+
+const SCROLL_HINT_KEY = "emma:details-hint-seen";
+const SCROLL_HINT_DELAY_MS = 3000;
+const SCROLL_HINT_BLINK_AFTER_MS = 6000;
+const SCROLL_HINT_BLINK_DURATION_MS = 3000;
+/** Pause between blink cycles after the first one. */
+const SCROLL_HINT_BLINK_GAP_MS = 3000;
 
 const projectStore = useProjectStore(useNuxtApp().$pinia);
 const selectionUi = useSelectionUiStore(useNuxtApp().$pinia);
@@ -82,6 +105,128 @@ const infoPanel = ref({
   credits: [],
   upcoming: [],
 });
+
+const scrollHintVisible = ref(false);
+const scrollHintBlinking = ref(false);
+/** Only the first blob click after load can schedule the hint. */
+let scrollHintArmed = true;
+/** @type {ReturnType<typeof setTimeout> | null} */
+let scrollHintTimer = null;
+/** @type {ReturnType<typeof setTimeout> | null} */
+let scrollHintBlinkDelayTimer = null;
+/** @type {ReturnType<typeof setTimeout> | null} */
+let scrollHintBlinkEndTimer = null;
+let scrollHintTouchY = 0;
+
+function hasSeenScrollHint() {
+  try {
+    return localStorage.getItem(SCROLL_HINT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markScrollHintSeen() {
+  try {
+    localStorage.setItem(SCROLL_HINT_KEY, "1");
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+function clearScrollHintTimers() {
+  if (scrollHintTimer != null) {
+    clearTimeout(scrollHintTimer);
+    scrollHintTimer = null;
+  }
+  if (scrollHintBlinkDelayTimer != null) {
+    clearTimeout(scrollHintBlinkDelayTimer);
+    scrollHintBlinkDelayTimer = null;
+  }
+  if (scrollHintBlinkEndTimer != null) {
+    clearTimeout(scrollHintBlinkEndTimer);
+    scrollHintBlinkEndTimer = null;
+  }
+}
+
+function stopScrollHintBlink() {
+  if (scrollHintBlinkDelayTimer != null) {
+    clearTimeout(scrollHintBlinkDelayTimer);
+    scrollHintBlinkDelayTimer = null;
+  }
+  if (scrollHintBlinkEndTimer != null) {
+    clearTimeout(scrollHintBlinkEndTimer);
+    scrollHintBlinkEndTimer = null;
+  }
+  scrollHintBlinking.value = false;
+}
+
+function runScrollHintBlinkCycle() {
+  if (!scrollHintVisible.value) return;
+  // Retrigger CSS animation if it already ran.
+  scrollHintBlinking.value = false;
+  requestAnimationFrame(() => {
+    if (!scrollHintVisible.value) return;
+    scrollHintBlinking.value = true;
+    scrollHintBlinkEndTimer = setTimeout(() => {
+      scrollHintBlinkEndTimer = null;
+      scrollHintBlinking.value = false;
+      if (!scrollHintVisible.value) return;
+      scrollHintBlinkDelayTimer = setTimeout(() => {
+        scrollHintBlinkDelayTimer = null;
+        runScrollHintBlinkCycle();
+      }, SCROLL_HINT_BLINK_GAP_MS);
+    }, SCROLL_HINT_BLINK_DURATION_MS);
+  });
+}
+
+function scheduleScrollHintBlink() {
+  stopScrollHintBlink();
+  scrollHintBlinkDelayTimer = setTimeout(() => {
+    scrollHintBlinkDelayTimer = null;
+    runScrollHintBlinkCycle();
+  }, SCROLL_HINT_BLINK_AFTER_MS);
+}
+
+function dismissScrollHint() {
+  if (!scrollHintVisible.value && !scrollHintBlinking.value) return;
+  stopScrollHintBlink();
+  scrollHintVisible.value = false;
+  markScrollHintSeen();
+  scrollHintArmed = false;
+}
+
+function scheduleScrollHint() {
+  if (!scrollHintArmed || hasSeenScrollHint()) return;
+  scrollHintArmed = false;
+  clearScrollHintTimers();
+  scrollHintBlinking.value = false;
+  scrollHintTimer = setTimeout(() => {
+    scrollHintTimer = null;
+    if (!selectionUi.selected || hasSeenScrollHint()) {
+      if (!hasSeenScrollHint()) scrollHintArmed = true;
+      return;
+    }
+    scrollHintVisible.value = true;
+    scheduleScrollHintBlink();
+  }, SCROLL_HINT_DELAY_MS);
+}
+
+function onScrollHintWheel() {
+  if (!scrollHintVisible.value) return;
+  dismissScrollHint();
+}
+
+function onScrollHintTouchStart(e) {
+  if (!scrollHintVisible.value || !e.touches?.[0]) return;
+  scrollHintTouchY = e.touches[0].clientY;
+}
+
+function onScrollHintTouchMove(e) {
+  if (!scrollHintVisible.value || !e.touches?.[0]) return;
+  if (Math.abs(e.touches[0].clientY - scrollHintTouchY) < 8) return;
+  dismissScrollHint();
+}
 
 const hasInfo = computed(
   () =>
@@ -131,7 +276,20 @@ function onSelectionState(state) {
   playerVideo.value = state.fullVideo;
   playerVisible.value = state.selectedIndex >= 0 && state.fullVideoReady;
   if (state.info) infoPanel.value = state.info;
+  const wasSelected = selectionUi.selected;
   selectionUi.setSelected(state.selectedIndex >= 0);
+  if (!wasSelected && state.selectedIndex >= 0) {
+    scheduleScrollHint();
+  }
+  if (state.selectedIndex < 0) {
+    clearScrollHintTimers();
+    stopScrollHintBlink();
+    // Tip never appeared — allow another attempt this session.
+    if (!scrollHintVisible.value && !hasSeenScrollHint()) {
+      scrollHintArmed = true;
+    }
+    scrollHintVisible.value = false;
+  }
   updatePlayerOverlap();
 }
 
@@ -206,6 +364,15 @@ watch(
 onMounted(async () => {
   console.log("[blob] BlobScene mounted");
   window.addEventListener("emma:clear-selection", onClearSelection);
+  window.addEventListener("wheel", onScrollHintWheel, { passive: true });
+  window.addEventListener("touchstart", onScrollHintTouchStart, {
+    passive: true,
+  });
+  window.addEventListener("touchmove", onScrollHintTouchMove, {
+    passive: true,
+  });
+
+  if (hasSeenScrollHint()) scrollHintArmed = false;
 
   try {
     await projectStore.fetchAll();
@@ -244,6 +411,11 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener("emma:clear-selection", onClearSelection);
+  window.removeEventListener("wheel", onScrollHintWheel);
+  window.removeEventListener("touchstart", onScrollHintTouchStart);
+  window.removeEventListener("touchmove", onScrollHintTouchMove);
+  clearScrollHintTimers();
+  stopScrollHintBlink();
   selectionUi.setSelected(false);
   infoObserver?.disconnect();
   infoObserver = null;
@@ -352,6 +524,58 @@ onUnmounted(() => {
   cursor: auto;
 }
 
+.blob-scroll-hint {
+  position: fixed;
+  right: 50px;
+  bottom: 50px;
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: min(280px, calc(100vw - 40px));
+  padding: 12px 14px;
+  background: #f5f5f5;
+  color: #000;
+  pointer-events: none;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+  border-radius: 10px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+.blob-scroll-hint--visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.blob-scroll-hint--blink {
+  animation: blob-scroll-hint-blink 1s ease-in-out 3;
+}
+
+@keyframes blob-scroll-hint-blink {
+  0%,
+  100% {
+    background-color: #f5f5f5;
+    color: #000;
+  }
+
+  50% {
+    background-color: #000;
+    color: #f5f5f5;
+  }
+}
+
+.blob-scroll-hint__mark {
+  flex: none;
+  line-height: 1.35;
+}
+
+.blob-scroll-hint__text {
+  margin: 0;
+  line-height: 1.35;
+}
+
 @media (max-width: 768px) {
   .blob-info {
     left: 50% !important;
@@ -360,6 +584,10 @@ onUnmounted(() => {
     padding: 0 50px;
     overflow-x: clip;
     box-sizing: border-box;
+  }
+
+  .blob-scroll-hint {
+    bottom: 96px;
   }
 }
 </style>
