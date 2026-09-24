@@ -37,10 +37,12 @@
       'blob-scroll-hint--visible': scrollHintVisible,
       'blob-scroll-hint--blink': scrollHintBlinking,
     }" role="status" aria-live="polite" :aria-hidden="scrollHintVisible ? 'false' : 'true'">
-      <span class="blob-scroll-hint__mark" aria-hidden="true">( ! )</span>
-      <p class="blob-scroll-hint__text">
-        Scroll down for more info
-      </p>
+      <span class="blob-scroll-hint__dots" aria-hidden="true">
+        <span class="blob-scroll-hint__dot" />
+        <span class="blob-scroll-hint__dot" />
+        <span class="blob-scroll-hint__dot" />
+      </span>
+      <p class="blob-scroll-hint__text">Scroll to read more</p>
     </div>
 
     <VideoPlayerBar :source-video="playerVideo" :visible="playerVisible" :dimmed="playerDimmed"
@@ -518,19 +520,15 @@ onUnmounted(() => {
 
 .blob-scroll-hint {
   position: fixed;
-  right: 50px;
-  bottom: 50px;
+  right: 20px;
+  bottom: 20px;
   z-index: 30;
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   max-width: min(280px, calc(100vw - 40px));
-  padding: 12px 14px;
-  background: #f5f5f5;
   color: #000;
   pointer-events: none;
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
-  border-radius: 10px;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.6s ease, visibility 0.6s ease;
@@ -541,27 +539,57 @@ onUnmounted(() => {
   visibility: visible;
 }
 
-.blob-scroll-hint--blink {
-  animation: blob-scroll-hint-blink 1s ease-in-out 3;
+.blob-scroll-hint__dots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: none;
 }
 
-@keyframes blob-scroll-hint-blink {
+.blob-scroll-hint__dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #000;
+  opacity: 0.15;
+  animation: blob-scroll-hint-dot-blink 1.2s ease-in-out infinite;
+}
+
+.blob-scroll-hint__dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.blob-scroll-hint__dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.blob-scroll-hint--blink {
+  animation: blob-scroll-hint-lift 1s ease-in-out 3;
+}
+
+@keyframes blob-scroll-hint-dot-blink {
 
   0%,
   100% {
-    background-color: #f5f5f5;
-    color: #000;
+    opacity: 0.15;
   }
 
   50% {
-    background-color: #b7b7b7;
-    color: #000;
+    opacity: 1;
   }
 }
 
-.blob-scroll-hint__mark {
-  flex: none;
-  line-height: 1.35;
+@keyframes blob-scroll-hint-lift {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 .blob-scroll-hint__text {
@@ -580,7 +608,8 @@ onUnmounted(() => {
   }
 
   .blob-scroll-hint {
-    bottom: 96px;
+    bottom: 70px;
+    right: 50px;
   }
 }
 </style>
